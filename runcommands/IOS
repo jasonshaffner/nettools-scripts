@@ -1,0 +1,4 @@
+conf t
+config-register 0x2102
+end
+wr

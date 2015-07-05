@@ -1,0 +1,1 @@
+sh int desc | ex admin | ex up | ex Status
