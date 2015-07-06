@@ -1,1 +1,0 @@
-A diff to compare files when there may be a drastic change in positioning of lines of text. In other words, it ignores positioning and just looks for matching lines, returning the differences between the two files.
