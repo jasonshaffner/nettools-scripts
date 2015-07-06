@@ -1,0 +1,35 @@
+#!/bin/bash
+echo "Content-type: text/html"
+echo ""
+echo "<!doctype html>"
+echo "<html>"
+echo "<head><title>List IP</title>"
+echo "</head>"
+echo "<body>"
+echo "<div id="content">"
+echo "<div id="body-text">"
+echo "A tool to list sequential IP addresses<br>"
+echo "<form method=GET action=\"${SCRIPT}\">"\
+	"<br>Enter start and end IP:<br>"\
+          "<input type="text" name="start" size=32>"\
+          "<input type="text" name="end" size=32>"
+echo "<br><input type="submit" value="Submit">"\
+       "<input type="reset" value="Reset"></form><br><br>"
+if [ "$REQUEST_METHOD" != "GET" ]; then
+	echo "<hr>Script Error:"\
+		"<br>Usage error, cannot complete request, REQUEST_METHOD!=GET."\
+		"<br>Check your FORM declaration and be sure to use METHOD=\"GET\".<hr>"
+		exit 1
+fi
+if [ -z "$QUERY_STRING" ]; then
+        exit 0
+fi
+start=`echo "$QUERY_STRING" | sed 's/.*start=\(.*\)&end.*/\1/'`
+end=`echo "$QUERY_STRING" | sed 's/.*end=\(.*\)/\1/'`
+echo "<b>RESULT:</b><br><pre>" 
+./listip.sh "$start" "$end"
+echo "</pre>"
+echo "</div>"
+echo "</div>"
+echo "</body>"
+echo "</html>"

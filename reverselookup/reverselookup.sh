@@ -65,7 +65,7 @@ else
 fi
 while read ip; do
 	if [[ ! "$ip" =~ ^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$ ]]; then
-		echo here
+		echo "Invalid IP Address" "$ip"
 		exit 3 
 	fi
 	hostname=$( host $ip | tail -n 1 | sed -e 's/.*pointer //' -e 's/\.$//' ) 

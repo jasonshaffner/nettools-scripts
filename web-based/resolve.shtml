@@ -1,0 +1,53 @@
+#!/bin/bash
+echo "Content-type: text/html"
+echo ""
+echo "<!doctype html>"
+echo "<html>"
+echo "<head><title>Resolve</title>"
+echo "</head>"
+echo "<body>"
+echo "<div id="content">"
+echo "<div id="body-text">"
+echo "A tool to resolve hostnames to ip's in bulk<br>"
+echo "<form method=GET action=\"${SCRIPT}\">"\
+        'Pick one or none:<br>'\
+        '<input type="radio" name="option1" value="-c"> Prints hostnames regardless of whether DNS entry exists<br>'\
+        '<input type="radio" name="option1" value="-n"> Like above, except prints "No IP Found" in the IP column<br><br>'\
+        'Pick one or none:<br>'\
+        '<input type="radio" name="option2" value="-r"> Prints Hostnames in first column, IPs in second<br>'\
+        '<input type="radio" name="option2" value="-i"> Prints IPs only<br><br>'\
+	'Pick one:<br>'\
+	'<input type="radio" name="option3" value="" checked> Tab Separated Values<br>'\
+	'<input type="radio" name="option3" value="-d"> Comma Separated Values<br>'\
+	"<br><br>Enter hostnames (one per line, or separated by spaces or commas):<br>"\
+	"<TEXTAREA ROWS=10 COLS=80 NAME="bulk"></TEXTAREA>"
+echo "<br><input type="submit" value="Submit">"\
+       "<input type="reset" value="Reset"></form><br><br>"
+if [ "$REQUEST_METHOD" != "GET" ]; then
+	echo "<hr>Script Error:"\
+		"<br>Usage error, cannot complete request, REQUEST_METHOD!=GET."\
+		"<br>Check your FORM declaration and be sure to use METHOD=\"GET\".<hr>"
+		exit 1
+fi
+if [ -z "$QUERY_STRING" ]; then
+        exit 0
+fi
+if [[ ! "$QUERY_STRING" =~ "option" ]]; then
+        option=""
+else
+	option="-"
+        option+=`echo "$QUERY_STRING" | sed 's/\(.*option1=-\)*\(.\).*/\2/'`
+        option+=`echo "$QUERY_STRING" | sed 's/\(.*option2=-\)*\(.\).*/\2/'`
+        option+=`echo "$QUERY_STRING" | sed 's/\(.*option3=-\)*\(.\).*/\2/'`
+fi
+tmp=`echo "$QUERY_STRING" | sed 's/.*bulk=\(.*\)/\1/' | sed -e 's/%2F/%/g'  -e 's/%2C/%/g' -e 's/%0D/%/g' -e 's/%0A/%/g' -e 's/+/%/g' -e 's/%%\+/%/g'`
+IFS="%+" read -a broken <<< "$tmp"
+echo "<b>RESULT:</b><br><pre>"
+for hostname in "${broken[@]}"; do
+	./resolve.sh $option $hostname
+done
+echo "</pre>
+echo "</div>"
+echo "</div>"
+echo "</body>"
+echo "</html>"

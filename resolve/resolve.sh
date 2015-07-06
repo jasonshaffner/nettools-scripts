@@ -22,7 +22,7 @@ function dnsresolve() {
 	else
 		HOSTNAME=$2
 	fi
-	output="$( host $HOSTNAME | tail -n 1 )"
+	output="$( host $HOSTNAME | head -n 1 )"
 	if [[ ! "$output" =~ "not found" ]]; then
 		hostname="$( echo -e "$output" | sed 's/\s.*//' )"
 		ip="$( echo -e "$output" | sed 's/.*address //' )"
@@ -77,7 +77,7 @@ function dnsresolve() {
                 fi
         fi
 }
-(if [ -z "$1" ] || [ "-h" == "$1" ] || [ "--help" == "$1" ] || ( [ ! -f "${@: -1}" ] && [[ ! "$1" =~ \-.*f.* ]] ); then
+(if [ -z "$1" ] || [ "-h" == "$1" ] || [ "--help" == "$1" ] || ( [ ! -f "${@: -1}" ] && [[ "$1" =~ \-.*f.* ]] ); then
         exit 3
 elif [[ "$1" =~ \-.*f.* ]]; then
 	while read HOSTNAME; do

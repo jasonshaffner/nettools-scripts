@@ -1,0 +1,62 @@
+#!/bin/bash
+echo "Content-type: text/html"
+echo ""
+echo "<!doctype html>"
+echo "<html>"
+echo "<head><title>Convertmask</title>"
+echo "</head>"
+echo "<body>"
+echo "<div id="content">"
+echo "<div id="body-text">"
+echo "A tool to convert between CIDR, Mask and Wildcard Notations<br>"
+echo "<br>Output notation:<br>"
+echo "<form method=GET action=\"${SCRIPT}\">"\
+	'<input type="radio" name="options" value="-c"> CIDR<br>'\
+	'<input type="radio" name="options" value="-m"> Subnet Mask<br>'\
+	'<input type="radio" name="options" value="-w"> Wildcard<br>'
+echo "<br>To convert a single address, enter address and CIDR, Mask or Wildcard here:<br>"\
+          "<input type="text" name="orig" size=32>"
+echo "<br><br>For bulk conversions enter text here:<br>"\
+	"<TEXTAREA ROWS=10 COLS=80 NAME="bulk"></TEXTAREA>"
+echo "<br><input type="submit" value="Submit">"\
+       "<input type="reset" value="Reset"></form><br><br>"
+if [ "$REQUEST_METHOD" != "GET" ]; then
+	echo "<hr>Script Error:"\
+		"<br>Usage error, cannot complete request, REQUEST_METHOD!=GET."\
+		"<br>Check your FORM declaration and be sure to use METHOD=\"GET\".<hr>"
+		exit 1
+fi
+if [ -z "$QUERY_STRING" ]; then
+        exit 0
+else
+	if [[ ! "$QUERY_STRING" == *= ]]; then
+		echo "<b>RESULT:</b><br><pre>"
+		option=`echo "$QUERY_STRING" | sed 's/.*options=\(.*\)\&or.*/\1f/'`
+		if [[ "${#option}" -gt 5 ]]; then
+			echo "Please select an option"
+			exit 0
+		fi
+		original="/tmp/string"
+		echo "$QUERY_STRING" | sed 's/.*bulk=\(.*\)/\1/' | sed -e 's/\+/ /g' -e 's/%2F/\//g' -e 's/%2C/,/g' -e 's/%0D//g' -e 's/%0A/\n/g' -e 's/%09/\t/g' -e 's/%3B/;/g' -e 's/%3A/:/g' > /tmp/string
+		./convertmask.sh "$option" "$original"
+	else
+		echo "<b>RESULT:</b><br><pre>"
+		option=`echo "$QUERY_STRING" | sed 's/.*options=\(.*\)\&orig.*/\1/'`
+		if [[ "${#option}" -gt 5 ]]; then
+			echo "Please select an option"
+			exit 0
+		fi
+		original=`echo "$QUERY_STRING" | sed 's/.*orig=\(.*\)\&.*/\1/' | sed 's/%2F/\//g' | sed 's/\+/ /g'`
+		if [[ "$original" =~ " " ]]; then
+			original1=`echo "$original" | sed 's/\ .*//'`
+			original2=`echo "$original" | sed 's/.*\ //'`
+			./convertmask.sh "$option" "$original1" "$original2"
+		else
+			./convertmask.sh "$option" "$original"
+		fi
+	fi
+fi
+echo "</pre></div>"
+echo "</div>"
+echo "</body>"
+echo "</html>"

@@ -1,0 +1,60 @@
+#!/bin/bash
+echo "Content-type: text/html"
+echo ""
+echo "<!doctype html>"
+echo "<html>"
+echo "<head><title>Reverse Lookup</title>"
+echo "</head>"
+echo "<body>"
+echo "<div id="content">"
+echo "<div id="body-text">"
+echo "A tool to resolve hostnames in bulk<br>"
+echo "<br>Output format:<br>"
+echo "<form method=GET action=\"${SCRIPT}\">"\
+	'Pick one or none:<br>'\
+	'<input type="radio" name="option1" value="-c"> Prints IPs regardless of whether DNS entry exists<br>'\
+	'<input type="radio" name="option1" value="-n"> Like above, except prints "No DNS Entry Found" in the hostname column<br><br>'\
+	'Pick one or none:<br>'\
+	'<input type="radio" name="option2" value="-r"> Prints Hostnames in first column, IPs in second<br>'\
+	'<input type="radio" name="option2" value="-H"> Prints Hostnames only<br>'
+echo "<br>To resolve an address range, enter start and end IP:<br>"\
+          "<input type="text" name="start" size=32>"\
+          "<input type="text" name="end" size=32>"
+echo "<br><br>For bulk asequential resolving, enter text here (one ip per line):<br>"\
+	"<TEXTAREA ROWS=10 COLS=20 NAME="bulk"></TEXTAREA>"
+echo "<br><input type="submit" value="Submit">"\
+       "<input type="reset" value="Reset"></form><br><br>"
+if [ "$REQUEST_METHOD" != "GET" ]; then
+	echo "<hr>Script Error:"\
+		"<br>Usage error, cannot complete request, REQUEST_METHOD!=GET."\
+		"<br>Check your FORM declaration and be sure to use METHOD=\"GET\".<hr>"
+		exit 1
+fi
+if [ -z "$QUERY_STRING" ]; then
+        exit 0
+fi
+if [[ ! "$QUERY_STRING" =~ "option" ]]; then
+	option="-i"
+else
+	option=`echo "$QUERY_STRING" | sed 's/\(.*option1=-\)*\(.\).*/-\2i/'`
+	option+=`echo "$QUERY_STRING" | sed 's/\(.*option2=-\)*\(.\).*/\2/'`
+fi
+if [[ "$QUERY_STRING" == *= ]]; then
+	start=`echo "$QUERY_STRING" | sed 's/.*start=\(.*\)&end.*/\1/'`
+	end=`echo "$QUERY_STRING" | sed 's/.*end=\(.*\)&.*/\1/'`
+	echo "<b>RESULT:</b><br><pre>" 
+	./reverselookup.sh "$option" "$start" "$end"
+else
+	tmp=`echo "$QUERY_STRING" | sed 's/.*bulk=\(.*\)/\1/' | sed -e 's/\+/ /g' -e 's/%2F/\//g' -e 's/%0D//g' -e 's/0A//g'`
+	IFS="%" read -a broken <<< "$tmp"
+	echo "<b>RESULT:</b><br><pre>"
+	for ip in "${broken[@]}"; do
+		./reverselookup.sh "$option" "$ip" "$ip"
+		#echo "$output"
+	done	
+fi
+echo "</pre>"
+echo "</div>"
+echo "</div>"
+echo "</body>"
+echo "</html>"
