@@ -1,0 +1,85 @@
+#!/bin/bash
+echo "Content-type: text/html"
+echo ""
+echo "<!doctype html>"
+echo "<html>"
+echo "<body>"
+echo "Bundle Config"
+echo "A tool to generate bundled interface configurations for IOS-XR<br>"
+echo "<form method=GET action=\"${SCRIPT}\">"\
+	"<br>Enter starting port number: (ie. 2/1/0/5)"\
+          "<input type="text" name="start" size=16>"\
+	"<br>Enter number of ports per card:"\
+          "<input type="text" name="num" size=5>"\
+	"<br>Enter number of ports to configure:"\
+          "<input type="text" name="total" size=5>"\
+        '<br><br>Choose what you would like to configure:<br><br>'\
+        '<input type="radio" name="option1" value="-d"> Interface Description'\
+	"<br>&nbsp&nbsp Enter remote router hostname: "\
+          "<input type="text" name="rhost" size=16>"\
+	"<br>&nbsp&nbsp Enter remote router starting port number: (ie. 2/1/0/5)"\
+          "<input type="text" name="rstart" size=16>"\
+	"<br>&nbsp&nbsp Enter remote router number of ports per card:"\
+          "<input type="text" name="rnum" size=5><br><br>"\
+        '<input type="radio" name="option2" value="-b"> Bundle ID Mode Active'\
+	"<br>&nbsp&nbsp Enter bundle id number:"\
+          "<input type="text" name="bnum" size=5><br><br>"\
+        '<input type="radio" name="option3" value="-l"> LACP Period Short<br>'\
+        '<input type="radio" name="option4" value="-i"> Load-interval 30<br>'\
+        '<input type="radio" name="option5" value="-n"> No shut the port<br>'\
+        '<input type="radio" name="option6" value="-s"> Shut the port<br>'\
+        '<input type="radio" name="option7" value="-c"> Clear previous interface configuration<br>'
+echo "<br><input type="submit" value="Submit">"\
+       "<input type="reset" value="Reset"></form><br><br>"
+if [ "$REQUEST_METHOD" != "GET" ]; then
+	echo "<hr>Script Error:"\
+		"<br>Usage error, cannot complete request, REQUEST_METHOD!=GET."\
+		"<br>Check your FORM declaration and be sure to use METHOD=\"GET\".<hr>"
+		exit 1
+fi
+if [ -z "$QUERY_STRING" ]; then
+        exit 0
+fi
+if [[ ! "$QUERY_STRING" =~ "option" ]]; then
+        echo "<b>Please select what you would like to configure</b>"
+	exit 1
+else
+	option=""
+	if [[ "$QUERY_STRING" =~ "option7" ]]; then
+        	option+=`echo "c"`
+	fi
+	if [[ "$QUERY_STRING" =~ "option3" ]]; then
+        	option+=`echo "l"`
+	fi
+	if [[ "$QUERY_STRING" =~ "option4" ]]; then
+        	option+=`echo "i"`
+	fi
+	if [[ "$QUERY_STRING" =~ "option5" ]]; then
+        	option+=`echo "n"`
+	fi
+	if [[ "$QUERY_STRING" =~ "option6" ]]; then
+        	option+=`echo "s"`
+	fi
+	if [[ ! -z "$option" ]]; then
+		option=`echo "$option" | sed 's/^/\-/'`
+	fi
+	if [[ "$QUERY_STRING" =~ "option1" ]]; then
+		option+=" -d "
+        	option+=`echo "$QUERY_STRING" | sed -e 's/option2.*//' -e 's/bnum.*//' -e 's/.*rhost=//' -e 's/r[a-z]\+=//g' -e 's/%2F/\//g' -e 's/\&/\ /g'`
+	fi
+	if [[ "$QUERY_STRING" =~ "option2" ]]; then
+		option+=" -b "
+        	option+=`echo "$QUERY_STRING" | sed -e 's/option3.*//' -e 's/^.*bnum=//' -e 's/\&/\ /g'`
+	fi
+fi
+tmp=`echo "$QUERY_STRING" | sed -e 's/rhost.*//' -e 's/[a-z]\+\=//g' -e 's/\%2F/\//g' -e 's/\&/\ /g'` 
+read -a broken <<< "$tmp"
+start="${broken[0]}"
+num="${broken[1]}"
+total="${broken[2]}"
+echo "<b>RESULT:</b><br><pre>"
+makebundle $option $start $num $total 
+done
+echo "</pre>
+echo "</body>"
+echo "</html>"
