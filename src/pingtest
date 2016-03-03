@@ -2,7 +2,7 @@
 
 function pingtester() {
 	printf "$1"
-        live="$(ping -c 3 -l 3 -W 1 "$1" | tail -n 2 | grep received | sed -e 's/.*transmitted, \([0-3]\).*/\1/')"
+        live="$(ping -q -c 3 -l 3 -W 1 "$1" | tail -n 2 | grep received | sed -e 's/.*transmitted, \([0-3]\).*/\1/')"
 	if [[ "$live" > 0 ]]; then
 		printf " UP\n"
 	else
@@ -10,7 +10,11 @@ function pingtester() {
 	fi
 }
 
-if [ -z "$2" ]; then
+if [[ "$1" =~ \-.*c.* ]]; then
+	for IP in $( listip -c "$2" ); do
+		pingtester "$IP"
+	done
+elif [ -z "$2" ]; then
 	while read IP; do
 		pingtester "$IP"
 	done < "$1"
