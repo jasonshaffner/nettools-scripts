@@ -14,6 +14,7 @@ if [[ "${@: 1}" =~ \-d ]]; then
                         rstart=`echo "${@:$i:1}"`
                         i=$(( $i + 1 ))
                         rnum=`echo "${@:$i:1}"`
+			break
                 else
                         i=$(( $i + 1 ))
                 fi
@@ -22,6 +23,11 @@ if [[ "${@: 1}" =~ \-d ]]; then
 fi
 i=0
 lastarg="$#"
+if [ -e "${!#}" ]; then
+	lines=`cat "${!#}"`
+else
+	lines="${!#}"
+fi
 c=$(( $lastarg - 1 ))
 card=`echo "${@:$c:1}"`
 s=$(( $lastarg - 2 ))
@@ -114,7 +120,8 @@ while read line; do
 		fi
 	fi
 	if [[ "$description" ]] && [[ "$line" =~ "description" ]]; then
-		echo "$line" | sed -e 's/[0-9]\+\/[0-9]\+\/[0-9]\+\/[0-9]\+/'${l[0]}'\/'${l[1]}'\/'${l[2]}'\/'${l[3]}'/' \
+		echo "$line" | sed -e 's/[[:space:]]\+$//' \
+			-e 's/[0-9]\+\/[0-9]\+\/[0-9]\+\/[0-9]\+/'${l[0]}'\/'${l[1]}'\/'${l[2]}'\/'${l[3]}'/' \
 			-e 's/[0-9]\+\/[0-9]\+\/[0-9]\+\/[0-9]\+$/'${d[0]}'\/'${d[1]}'\/'${d[2]}'\/'${d[3]}'/' 
 	elif [ "$noshut" ] && [ "$line" == "$base" ] && [ -z "$routing" ]; then 
 		echo "$line" | sed -e 's/^/no\ /' -e 's/$/\ shutdown/' \
@@ -122,4 +129,4 @@ while read line; do
 	else
 		echo "$line" | sed 's/[0-9]\+\/[0-9]\+\/[0-9]\+\/[0-9]\+/'${l[0]}'\/'${l[1]}'\/'${l[2]}'\/'${l[3]}'/'
 	fi
-done < "${!#}"
+done <<< "$lines"

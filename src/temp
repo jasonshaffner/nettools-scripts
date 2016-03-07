@@ -1,0 +1,25 @@
+interface TenGigE0/0/0/0 description tge to dllatxl301r tge3/4/0/0
+interface TenGigE0/0/0/0 
+interface TenGigE0/0/0/0 bundle id 1 mode active
+interface TenGigE0/0/0/0 lacp period short
+interface TenGigE0/0/0/0 load-interval 30
+interface TenGigE0/0/0/1 description tge to dllatxl301r tge3/4/0/1
+interface TenGigE0/0/0/1 
+interface TenGigE0/0/0/1 bundle id 1 mode active
+interface TenGigE0/0/0/1 lacp period short
+interface TenGigE0/0/0/1 load-interval 30
+interface TenGigE0/0/0/2 description tge to dllatxl301r tge3/4/0/2
+interface TenGigE0/0/0/2 
+interface TenGigE0/0/0/2 bundle id 1 mode active
+interface TenGigE0/0/0/2 lacp period short
+interface TenGigE0/0/0/2 load-interval 30
+interface TenGigE0/0/0/3 description tge to dllatxl301r tge3/4/0/3
+interface TenGigE0/0/0/3 
+interface TenGigE0/0/0/3 bundle id 1 mode active
+interface TenGigE0/0/0/3 lacp period short
+interface TenGigE0/0/0/3 load-interval 30
+interface TenGigE0/0/0/4 description tge to dllatxl301r tge3/4/0/4
+interface TenGigE0/0/0/4 
+interface TenGigE0/0/0/4 bundle id 1 mode active
+interface TenGigE0/0/0/4 lacp period short
+interface TenGigE0/0/0/4 load-interval 30

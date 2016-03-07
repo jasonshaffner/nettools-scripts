@@ -46,15 +46,13 @@ if [[ "$QUERY_STRING" =~ "option1" ]]; then
 	option+=" -d "
 	option+=`echo "$QUERY_STRING" | sed -e 's/option5.*//' -e 's/.*rstart=//' -e 's/r[a-z]\+=//g' -e 's/%2F/\//g' -e 's/\&/\ /g'`
 fi
-#echo "$option"
-echo "$QUERY_STRING" | sed 's/.*bulk=\(.*\)/\1/' | sed -e 's/\+/ /g' -e 's/%2F/\//g' -e 's/%2C/,/g' -e 's/%0D//g' -e 's/%0A/\n/g' -e 's/%09/\t/g' -e 's/%3B/;/g' -e 's/%3A/:/g' > /tmp/string
+orig=`echo "$QUERY_STRING" | sed 's/.*bulk=\(.*\)/\1/' | sed -e 's/\+/ /g' -e 's/%2F/\//g' -e 's/%2C/,/g' -e 's/%0D//g' -e 's/%0A/\n/g' -e 's/%09/\t/g' -e 's/%3B/;/g' -e 's/%3A/:/g'` 
 tmp=`echo "$QUERY_STRING" | sed -e 's/[a-z]\+\=//g' -e 's/\%2F/\//g' -e 's/\&/\ /g'` 
 read -a broken <<< "$tmp"
 start="${broken[0]}"
 num="${broken[1]}"
 echo "<b>RESULT:</b><br><pre>"
-#echo "$start" "$num"
-moveports $option $start $num /tmp/string
+moveports $option $start $num "$orig"
 done
 echo "</pre>
 echo "</body>"
