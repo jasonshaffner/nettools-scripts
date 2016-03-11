@@ -33,7 +33,8 @@ card=`echo "${@:$c:1}"`
 s=$(( $lastarg - 2 ))
 start=`echo "${@:$s:1}"`
 IFS='/' read -a l <<< "$start"
-while read line; do 
+while read lines; do 
+	line=`echo "$lines" | sed -e 's/[[:space:]]*$//'`
 	if [[ "$line" =~ .*ospf.* ]]; then
 		ospf=1
 		routing=1
