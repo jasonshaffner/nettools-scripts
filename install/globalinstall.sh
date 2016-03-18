@@ -1,6 +1,6 @@
 #!/bin/bash
 cd ../src/
-dir="$( echo $PATH | tr ":" "\n" | tail -n 1 )"
+dir="$( echo $PATH | tr ":" "\n" | head -n 1 )"
 for s in $( ls ); do
-	cp "$s" "$dir"
+	sudo cp "$s" "$dir"
 done
