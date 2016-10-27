@@ -18,11 +18,18 @@ fi
 if [[ "$1" =~ \-.*i.* ]]; then
 	> .tmp
 	if [[ ! "${@: -2:1}" =~ ^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$ ]] || [[ ! "${@: -1}" =~ ^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$ ]]; then
-	        echo -e "Invalid IP address"
-	        exit 3
+		if [[ ! "${@: -1}" =~ ^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/([0-3][0-9]?)$ ]]; then
+			echo -e "Invalid IP address"
+			exit 3
+		fi
 	fi
-	lowip="${@: -2:1}"
-	highip="${@: -1}"
+	if [[ "${@: -1}" =~ .*\/.* ]]; then
+		lowip=(`listip -c "${@: -1}" | head -n 1`)
+		highip=(`listip -c "${@: -1}" | tail -n 1`)
+	else
+		lowip="${@: -2:1}"
+		highip="${@: -1}"
+	fi
 	low=(`echo $lowip | awk '{split($lowip,a,"."); print a[1]" "a[2]" "a[3]" "a[4]}'`)
 	high=(`echo $highip | awk '{split($highip,a,"."); print a[1]" "a[2]" "a[3]" "a[4]}'`)
 	max=255
@@ -68,7 +75,7 @@ while read ip; do
 		echo "Invalid IP Address" "$ip"
 		exit 3 
 	fi
-	hostname=$( host $ip | tail -n 1 | sed -e 's/.*pointer //' -e 's/\.$//' ) 
+	hostname=$( host -W 1 -s $ip | tail -n 1 | sed -e 's/.*pointer //' -e 's/\.$//' ) 
         test -z "$hostname" && hostname="Error"
 	if [[ $hostname != *"not found"* ]]; then 
 		if [ ! $reverse ] && [ ! $hostonly ]; then
@@ -112,7 +119,7 @@ then
 	printf	"\t-n\tLike -c, except prints \"No DNS Entry Found\" in the hostname column\n"
 	printf	"\t-r\tPrints Hostnames in first column, IPs in second\n"
 	printf	"\t-H\tPrints Hostnames only\n"
-	printf	"\t-i\tAllows use of start and end IP addresses for range lookups\n\n"
+	printf	"\t-i\tAllows use of start and end IP addresses or CIDR for range lookups\n\n"
 	if [ -f .tmp ]; then
 		rm .tmp
 	fi
